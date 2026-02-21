@@ -7,7 +7,6 @@ let package = Package(
     products: [
         .library(
             name: "zally-sdk",
-            type: .dynamic,
             targets: ["zally_sdk"]
         )
     ],
