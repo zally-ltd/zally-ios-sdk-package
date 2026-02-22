@@ -7,9 +7,9 @@ Pod::Spec.new do |s|
   s.license          = { :type => "Proprietary" }
   s.author           = "zally"
   s.source           = {
-    :http => "https://github.com/zally-ltd/zally-ios-sdk-package/releases/download/v1.0.0/zally-sdk-1.0.0.zip",
+    :http => "https://github.com/zally-ltd/zally-ios-sdk-package/releases/download/v1.0.0/zally_sdk-1.0.0.zip",
     :type => "zip",
-    :sha256 => "fa48f4963fb0224628ec509e3a705e70900ee8442ae9fc2ead25440613cea141"
+    :sha256 => "ba58bf7b9ebe52eaf33b1da9626626db9ee8273809459badf07f1e3e05cb3de5"
   }
   s.platform         = :ios
   s.ios.deployment_target = "17.0"
