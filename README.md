@@ -2,7 +2,7 @@
 
 Public binary-only distribution of the zally iOS SDK.
 
-**Artifact layout:** The release zip contains `zally_sdk.xcframework`. The framework inside each slice (e.g. `ios-arm64`, `ios-arm64_x86_64-simulator`) is named **`zally_sdk.framework`** (underscore) to match the xcframework name and the Swift module `import zally_sdk`.
+**Artifact layout:** The release zip contains `zally-sdk.xcframework`. Each slice has `zally-sdk.framework`. In Swift you import the module with **`import zally_sdk`** (Swift uses underscores for module names).
 
 ## Installation
 

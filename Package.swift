@@ -7,15 +7,15 @@ let package = Package(
     products: [
         .library(
             name: "zally-sdk",
-            targets: ["zally_sdk"]
+            targets: ["zally-sdk"]
         )
     ],
     targets: [
         .binaryTarget(
-            name: "zally_sdk",
+            name: "zally-sdk",
             url:
-                "https://github.com/zally-ltd/zally-ios-sdk-package/releases/download/v1.0.0/zally_sdk-1.0.0.zip",
-            checksum: "ba58bf7b9ebe52eaf33b1da9626626db9ee8273809459badf07f1e3e05cb3de5"
+                "https://github.com/zally-ltd/zally-ios-sdk-package/releases/download/v1.0.0/zally-sdk-1.0.0.zip",
+            checksum: "577a01ba461b8d7bd2d45207d5853c6ee45ddd52ed1a2d8e60063738dc16894c"
         )
     ]
 )
