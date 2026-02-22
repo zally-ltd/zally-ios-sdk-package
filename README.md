@@ -1,6 +1,6 @@
-# Zally iOS SDK (binary package)
+# zally iOS SDK (binary package)
 
-Public binary-only distribution of the Zally iOS SDK.
+Public binary-only distribution of the zally iOS SDK.
 
 ## Installation
 

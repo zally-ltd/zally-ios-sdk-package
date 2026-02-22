@@ -1,11 +1,11 @@
 Pod::Spec.new do |s|
   s.name             = "zally-sdk"
   s.version          = "1.0.0"
-  s.summary          = "Zally iOS SDK"
-  s.description      = "Binary-only distribution of the Zally iOS SDK."
+  s.summary          = "zally iOS SDK"
+  s.description      = "Binary-only distribution of the zally iOS SDK."
   s.homepage         = "https://github.com/zally-ltd/zally-ios-sdk-package"
   s.license          = { :type => "Proprietary" }
-  s.author           = "Zally"
+  s.author           = "zally"
   s.source           = {
     :http => "https://github.com/zally-ltd/zally-ios-sdk-package/releases/download/v1.0.0/zally-sdk-1.0.0.zip",
     :type => "zip",
