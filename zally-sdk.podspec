@@ -13,5 +13,5 @@ Pod::Spec.new do |s|
   }
   s.platform         = :ios
   s.ios.deployment_target = "17.0"
-  s.vendored_frameworks = "zally-sdk.xcframework"
+  s.vendored_frameworks = "zally_sdk.xcframework"
 end
