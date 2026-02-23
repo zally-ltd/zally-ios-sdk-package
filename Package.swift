@@ -15,7 +15,7 @@ let package = Package(
             name: "zally_sdk",
             url:
                 "https://github.com/zally-ltd/zally-ios-sdk-package/releases/download/v1.0.0/zally-sdk-1.0.0.zip",
-            checksum: "095ebdf22d59ade7d7877aeeea62b2a28e12c28e4f657e133db990d133d5c3da"
+            checksum: "abf746eff87b0f28d7266c19eced7516f7b7be0f939367f8f89c4b6e6452ef1f"
         )
     ]
 )
