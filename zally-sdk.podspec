@@ -9,7 +9,7 @@ Pod::Spec.new do |s|
   s.source           = {
     :http => "https://github.com/zally-ltd/zally-ios-sdk-package/releases/download/v1.0.0/zally-sdk-1.0.0.zip",
     :type => "zip",
-    :sha256 => "f4c42efdfa7d261f11bd2e80fe49e61192c149bfa187e27ed6e03766c033746b"
+    :sha256 => "0c32d23fb9fa0f3d3c94f726c15a3e0486d75f6217577cbad754401acb6030b0"
   }
   s.platform         = :ios
   s.ios.deployment_target = "17.0"
