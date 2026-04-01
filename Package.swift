@@ -14,8 +14,8 @@ let package = Package(
         .binaryTarget(
             name: "zally_sdk",
             url:
-                "https://github.com/zally-ltd/zally-ios-sdk-package/releases/download/1.0.0/zally-sdk-1.0.0.zip",
-            checksum: "a08ca48fac2da2decd864357823049a597e2e924dbbbbc37da098e032ecb6b0a"
+                "https://github.com/zally-ltd/zally-ios-sdk-package/releases/download/1.0.1/zally-sdk-1.0.1.zip",
+            checksum: "3b3a5000138052da563b63f2951cc272138d92d79093b69f66e4b6c23b8e67f1"
         )
     ]
 )
