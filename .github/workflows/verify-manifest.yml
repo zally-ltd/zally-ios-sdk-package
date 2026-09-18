@@ -1,0 +1,131 @@
+name: Verify manifest
+
+# The one failure mode a distribution repo has: the manifests here point at a
+# release asset that does not exist, or whose bytes no longer match the
+# checksum they declare. Either breaks every consumer resolving the package,
+# and nothing else in the fleet would notice.
+#
+# Deliberately self-contained. This repo is public and the shared security
+# layer lives in a private repo; GitHub does not allow a public repo to call a
+# reusable workflow from a private one, which is why PR #1 was reverted. This
+# workflow depends on nothing outside the repo and no secrets.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [main]
+  # The asset can be deleted or replaced long after the last commit here, so
+  # commit-triggered runs alone would not catch it.
+  schedule:
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Manifests agree and the asset matches
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Verify
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          fail=0
+          note() { printf '%s\n' "$1"; }
+          err()  { printf '::error::%s\n' "$1"; fail=1; }
+
+          # Package.swift carries the url on the line after `url:`, so match the
+          # URL itself rather than the key.
+          spm_url=$(grep -oE 'https://github\.com/[^"]+\.zip' Package.swift | head -1 || true)
+          spm_sum=$(grep -A1 -E '^\s*checksum:' Package.swift | grep -oE '[a-f0-9]{64}' | head -1 || true)
+          [ -n "$spm_sum" ] || spm_sum=$(grep -oE 'checksum:\s*"[a-f0-9]{64}"' Package.swift | grep -oE '[a-f0-9]{64}' | head -1 || true)
+
+          pod_ver=$(grep -oE 's\.version[[:space:]]*=[[:space:]]*"[^"]+"' zally-sdk.podspec | grep -oE '"[^"]+"' | tr -d '"' | head -1 || true)
+          pod_url=$(grep -oE 'https://github\.com/[^"]+\.zip' zally-sdk.podspec | head -1 || true)
+          pod_sum=$(grep -oE ':sha256[[:space:]]*=>[[:space:]]*"[a-f0-9]{64}"' zally-sdk.podspec | grep -oE '[a-f0-9]{64}' | head -1 || true)
+
+          for pair in "spm_url:$spm_url" "spm_sum:$spm_sum" "pod_ver:$pod_ver" "pod_url:$pod_url" "pod_sum:$pod_sum"; do
+            name=${pair%%:*}; value=${pair#*:}
+            if [ -z "$value" ]; then
+              err "Could not parse ${name}. A manifest changed shape; update this workflow's parsing."
+            fi
+          done
+          [ "$fail" -eq 0 ] || exit 1
+
+          note "Package.swift  url=${spm_url}"
+          note "Package.swift  checksum=${spm_sum}"
+          note "podspec        version=${pod_ver}"
+          note "podspec        url=${pod_url}"
+          note "podspec        sha256=${pod_sum}"
+
+          # 1. The two manifests must describe the same artifact. A consumer on
+          #    SPM and a consumer on CocoaPods otherwise get different binaries.
+          if [ "$spm_url" != "$pod_url" ]; then
+            err "Package.swift and the podspec point at different assets."
+          fi
+          if [ "$spm_sum" != "$pod_sum" ]; then
+            err "Package.swift checksum and the podspec sha256 disagree."
+          fi
+
+          # 2. The podspec version must be the version in the asset path and
+          #    filename, or `pod` resolves a version whose bytes are another's.
+          url_tag=$(printf '%s' "$pod_url" | awk -F/ '{print $(NF-1)}')
+          url_file=$(printf '%s' "$pod_url" | awk -F/ '{print $NF}')
+          if [ "$url_tag" != "$pod_ver" ]; then
+            err "podspec version ${pod_ver} does not match the release tag ${url_tag} in the asset URL."
+          fi
+          if [ "$url_file" != "zally-sdk-${pod_ver}.zip" ]; then
+            err "Asset filename ${url_file} does not match version ${pod_ver}."
+          fi
+          [ "$fail" -eq 0 ] || exit 1
+
+          # 3. The asset must exist and its bytes must hash to the declared
+          #    checksum. SwiftPM's binaryTarget checksum is the SHA256 of the
+          #    zip, the same value CocoaPods carries as :sha256, so one
+          #    download proves both.
+          note "Downloading ${spm_url}"
+          if ! curl -fsSL --retry 3 --retry-delay 5 -o asset.zip "$spm_url"; then
+            err "Release asset could not be downloaded. It may have been deleted or made private."
+            exit 1
+          fi
+
+          actual=$(sha256sum asset.zip | awk '{print $1}')
+          size=$(stat -c%s asset.zip)
+          note "Downloaded ${size} bytes, sha256=${actual}"
+
+          if [ "$actual" != "$spm_sum" ]; then
+            err "Checksum mismatch. Declared ${spm_sum}, asset hashes to ${actual}. Every consumer resolving this package will fail."
+            exit 1
+          fi
+
+          # 4. The zip must actually contain the xcframework the target names.
+          #    Read the listing into a variable and match it without a pipe:
+          #    `unzip -l | grep -q` makes grep close the pipe on its first hit,
+          #    unzip dies on SIGPIPE, and pipefail reports a failure that did
+          #    not happen.
+          listing=$(unzip -Z1 asset.zip)
+          case "$listing" in
+            *"zally_sdk.xcframework/"*) note "Contains zally_sdk.xcframework" ;;
+            *) err "The asset does not contain zally_sdk.xcframework."; exit 1 ;;
+          esac
+
+          {
+            echo "## Manifest verified"
+            echo ""
+            echo "| Field | Value |"
+            echo "| --- | --- |"
+            echo "| Version | \`${pod_ver}\` |"
+            echo "| Asset | ${size} bytes |"
+            echo "| sha256 | \`${actual}\` |"
+            echo ""
+            echo "Package.swift and the podspec agree, and the published asset matches."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          note "OK"
